@@ -130,9 +130,9 @@ app.post('/send-email', upload.single('attachment'), (req, res) => {
                         background-color: #0073e6;
                         color: #ffffff;
                         text-decoration: none;
-                        padding: 10px 20px;
+                        padding: 5px 10px;
                         border-radius: 6px;
-                        font-size: 16px;
+                        font-size: 12px;
                         font-weight: bold;
                         text-align: center;
                         margin-top: 20px;
@@ -150,7 +150,7 @@ app.post('/send-email', upload.single('attachment'), (req, res) => {
                     <div class="footer">
                         <p>© Easy Faster Mailer 2024 All rights reserved <br>
                         Let's send emails to all your users email with Easy Faster Mailer : <br>
-                        <a href="">Easy Faster Mailer</a>
+                        <a href="https://easyfastermailer.vercel.app/" class="button">Easy Faster Mailer</a>
                         </p>
                     </div>
                 </div>
