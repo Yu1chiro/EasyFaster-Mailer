@@ -33,8 +33,49 @@ const upload = multer({
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Middleware untuk file statis
-app.use(express.static(path.join(__dirname, 'public')));
+// Middleware untuk file statis dengan cache control yang lebih baik
+app.use(express.static(path.join(__dirname, 'public'), {
+    setHeaders: (res, filePath) => {
+        // No-cache untuk semua file HTML
+        if (path.extname(filePath) === '.html') {
+            res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+            res.setHeader('Pragma', 'no-cache');
+            res.setHeader('Expires', '0');
+        }
+        // Gunakan ETag untuk aset statis lainnya
+        else {
+            res.setHeader('Cache-Control', 'public, max-age=3600, must-revalidate');
+            res.setHeader('ETag', generateETag(filePath));
+        }
+    }
+}));
+
+// Fungsi untuk generate ETag berdasarkan isi file
+function generateETag(filePath) {
+    try {
+        const fileStats = fs.statSync(filePath);
+        return `"${fileStats.mtime.getTime()}-${fileStats.size}"`;
+    } catch (error) {
+        console.error('Gagal membuat ETag:', error);
+        return null;
+    }
+}
+
+// Middleware global untuk header cache control yang lebih komprehensif
+app.use((req, res, next) => {
+    // Tambahkan header untuk mencegah caching di semua respons
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+
+    // Tambahkan header untuk kontrol versi
+    res.setHeader('X-Version', process.env.APP_VERSION || '1.0.0');
+
+    // Tambahkan header keamanan tambahan
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+
+    next();
+});
 
 // Konfigurasi transporter email
 const transporter = nodemailer.createTransport({
@@ -48,12 +89,6 @@ const transporter = nodemailer.createTransport({
 // Rute untuk halaman utama
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-// Middleware untuk header cache control
-app.use((req, res, next) => {
-    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
-    next();
 });
 
 // Fungsi untuk menyimpan file sementara (untuk Vercel)
