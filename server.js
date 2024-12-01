@@ -15,12 +15,17 @@ dotenv.config();
 
 const app = express();
 
-// Konfigurasi Multer dengan penyimpanan memori untuk Vercel
-const storage = multer.memoryStorage();
 const upload = multer({ 
-    storage: storage,
+    storage: multer.memoryStorage(),
     limits: {
-        fileSize: 5 * 1024 * 1024 // Batasan 5MB
+        fileSize: 25 * 1024 * 1024 // Batasan 25MB
+    },
+    fileFilter: (req, file, cb) => {
+        const maxSize = 25 * 1024 * 1024; // 25MB
+        if (file.size > maxSize) {
+            return cb(new Error('Ukuran file maksimal 25MB'), false);
+        }
+        cb(null, true);
     }
 });
 

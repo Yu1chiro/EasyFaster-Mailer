@@ -1,22 +1,57 @@
-ClassicEditor
+document.addEventListener('DOMContentLoaded', function() {
+    // Inisialisasi CKEditor
+    ClassicEditor
     .create(document.querySelector('#editor'), {
         toolbar: [
-            'heading', 
-            '|', 
-            'bold', 
-            'italic', 
-            'link', 
-            'bulletedList', 
-            'numberedList', 
-            'blockQuote'
+            'heading', '|', 
+            'bold', 'italic', 
+            'link', 'bulletedList', 
+            'numberedList', 'blockQuote'
         ]
     })
     .then(editor => {
-        document.getElementById('emailForm').addEventListener('submit', async function(e) {
+        // Ambil elemen form
+        const emailForm = document.getElementById('emailForm');
+        const attachmentInput = document.getElementById('attachment');
+
+        // Validasi ukuran file sebelum submit
+        attachmentInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            const maxSize = 25 * 1024 * 1024; // 25MB
+
+            if (file) {
+                if (file.size > maxSize) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'File Terlalu Besar',
+                        text: 'Ukuran file maksimal adalah 25MB',
+                        confirmButtonColor: '#3085d6'
+                    });
+                    // Reset input file
+                    event.target.value = '';
+                }
+            }
+        });
+
+        // Handler submit form
+        emailForm.addEventListener('submit', async function(e) {
             e.preventDefault();
-            
+
             const form = new FormData(this);
-            
+            const attachmentFile = form.get('attachment');
+
+            // Validasi ukuran file saat submit (tambahan)
+            if (attachmentFile && attachmentFile.size > 25 * 1024 * 1024) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'File Terlalu Besar',
+                    text: 'Ukuran file maksimal adalah 25MB',
+                    confirmButtonColor: '#3085d6'
+                });
+                return;
+            }
+
+            // Validasi Username
             const Username = form.get('Username');
             if (!Username || Username.trim() === '') {
                 Swal.fire({
@@ -27,13 +62,13 @@ ClassicEditor
                 });
                 return;
             }
-            
+
+            // Validasi Email
             const recipients = form.get('recipients');
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             const emails = recipients.split(',').map(email => email.trim());
-            
+
             const invalidEmails = emails.filter(email => !emailRegex.test(email));
-            
             if (invalidEmails.length > 0) {
                 Swal.fire({
                     icon: 'error',
@@ -43,7 +78,8 @@ ClassicEditor
                 });
                 return;
             }
-            
+
+            // Validasi Pesan
             const message = editor.getData();
             if (!message || message.trim() === '') {
                 Swal.fire({
@@ -54,28 +90,30 @@ ClassicEditor
                 });
                 return;
             }
-            
+
+            // Set pesan dari editor
             form.set('message', message);
-            
+
+            // Tampilkan loading
             Swal.fire({
-                title:'Please wait 😊',
+                title: 'Please wait 😊',
                 html: 'Sending processing.....',
                 allowOutsideClick: false,
                 didOpen: () => {
                     Swal.showLoading();
                 }
             });
-            
+
             try {
                 const response = await fetch('/send-email', {
                     method: 'POST',
                     body: form
                 });
-                
+
                 if (response.ok) {
                     Swal.fire({
                         icon: 'success',
-                        title:'Success',
+                        title: 'Success',
                         html: 'Thankyou for using Easy Faster Mailer 😊👋',
                         confirmButtonColor: '#3085d6'
                     }).then(() => {
@@ -99,3 +137,4 @@ ClassicEditor
     .catch(error => {
         console.error('Error initializing CKEditor:', error);
     });
+});
