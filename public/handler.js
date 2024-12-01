@@ -222,4 +222,5 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('Error initializing CKEditor:', error);
     });
 });
+// testing of chache header
 // menambahkan fungsi pengecekkan file
