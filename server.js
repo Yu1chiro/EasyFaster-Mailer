@@ -150,7 +150,7 @@ app.post('/send-email', upload.single('attachment'), (req, res) => {
                     <div class="footer">
                         <p>© Easy Faster Mailer 2024 All rights reserved <br>
                         Let's send emails to all your users email with Easy Faster Mailer : <br>
-                        <a href="https://easyfastermailer.vercel.app/" class="button">Easy Faster Mailer</a>
+                        <a href="https://easyfaster-mailer.vercel.app/" class="button">Easy Faster Mailer ⚡</a>
                         </p>
                     </div>
                 </div>
