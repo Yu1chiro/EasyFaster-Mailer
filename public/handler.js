@@ -12,24 +12,108 @@ document.addEventListener('DOMContentLoaded', function() {
     .then(editor => {
         // Ambil elemen form
         const emailForm = document.getElementById('emailForm');
-        const attachmentInput = document.getElementById('attachment');
-
-        // Validasi ukuran file sebelum submit
-        attachmentInput.addEventListener('change', function(event) {
+        document.getElementById('attachment').addEventListener('change', function(event) {
             const file = event.target.files[0];
-            const maxSize = 25 * 1024 * 1024; // 25MB
-
+            
             if (file) {
-                if (file.size > maxSize) {
+                // Daftar ekstensi file yang sering digunakan
+                const allowedExtensions = [
+                    'pdf', 'docx', 'doc', 'xlsx', 'xls', 
+                    'pptx', 'ppt', 'txt', 'csv', 
+                    'jpg', 'jpeg', 'png', 'gif', 
+                    'mp4', 'avi', 'mov', 'mkv', 
+                    'zip', 'rar', '7z'
+                ];
+        
+                // Dapatkan ekstensi file
+                const fileExtension = file.name.split('.').pop().toLowerCase();
+                const fileSize = file.size; // dalam bytes
+                const maxSize = 25 * 1024 * 1024; // 25MB
+        
+                // Fungsi untuk mendapatkan tipe file yang lebih ramah
+                const getFileType = (extension) => {
+                    const types = {
+                        'pdf': 'PDF Document',
+                        'docx': 'Word Document',
+                        'doc': 'Word Document',
+                        'xlsx': 'Excel Spreadsheet',
+                        'xls': 'Excel Spreadsheet',
+                        'pptx': 'PowerPoint Presentation',
+                        'ppt': 'PowerPoint Presentation',
+                        'txt': 'Text File',
+                        'csv': 'CSV File',
+                        'jpg': 'JPEG Image',
+                        'jpeg': 'JPEG Image',
+                        'png': 'PNG Image',
+                        'gif': 'GIF Image',
+                        'mp4': 'MP4 Video',
+                        'avi': 'AVI Video',
+                        'mov': 'MOV Video',
+                        'mkv': 'MKV Video',
+                        'zip': 'ZIP Archive',
+                        'rar': 'RAR Archive',
+                        '7z': '7Z Archive'
+                    };
+                    return types[extension] || 'File';
+                };
+        
+                // Validasi ekstensi
+                if (!allowedExtensions.includes(fileExtension)) {
                     Swal.fire({
                         icon: 'error',
-                        title: 'File Terlalu Besar',
-                        text: 'Ukuran file maksimal adalah 25MB',
-                        confirmButtonColor: '#3085d6'
+                        title: 'Tipe File Tidak Didukung',
+                        html: `
+                            File yang Anda unggah tidak didukung.<br>
+                            Ekstensi file yang diizinkan:<br>
+                            ${allowedExtensions.join(', ')}
+                        `,
+                        confirmButtonColor: '#d33'
                     });
                     // Reset input file
                     event.target.value = '';
+                    return;
                 }
+        
+                // Validasi ukuran file
+                if (fileSize > maxSize) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Ukuran File Terlalu Besar',
+                        html: `
+                            <strong>${getFileType(fileExtension)}</strong> yang Anda pilih melebihi batas maksimal.<br>
+                            Maksimal ukuran file: <strong>25 MB</strong><br>
+                            Ukuran file Anda: <strong>${(fileSize / (1024 * 1024)).toFixed(2)} MB</strong>
+                        `,
+                        footer: 'Silakan pilih file yang lebih kecil',
+                        confirmButtonColor: '#3085d6',
+                        confirmButtonText: 'Mengerti'
+                    });
+                    // Reset input file
+                    event.target.value = '';
+                    return;
+                }
+        
+                // Konfirmasi upload file jika lolos validasi
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Konfirmasi Upload File',
+                    html: `
+                        Anda akan mengunggah:<br>
+                        <strong>${getFileType(fileExtension)}</strong><br>
+                        Nama: <strong>${file.name}</strong><br>
+                        Ukuran: <strong>${(fileSize / (1024 * 1024)).toFixed(2)} MB</strong>
+                    `,
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Ya, Upload',
+                    cancelButtonText: 'Batal'
+                }).then((result) => {
+                    if (!result.isConfirmed) {
+                        // Reset input file jika dibatalkan
+                        event.target.value = '';
+                    }
+                });
             }
         });
 
