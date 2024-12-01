@@ -11,8 +11,9 @@
         "src": "/(.*)",
         "dest": "server.js"
       }
-    ]
+    ],
+    "static": {
+      "public": "public"
+    }
   }
   
-
-
